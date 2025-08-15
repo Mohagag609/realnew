@@ -759,8 +759,9 @@
                             <thead>
                                 <tr>
                                     <th>الكود</th>
-                                    <th>النوع</th>
-                                    <th>المساحة (م²)</th>
+                                    <th>الاسم</th>
+                                    <th>البرج</th>
+                                    <th>الطابق</th>
                                     <th>السعر</th>
                                     <th>الحالة</th>
                                     <th>إجراءات</th>
@@ -770,8 +771,9 @@
                                 ${app.state.units.map(unit => `
                                     <tr>
                                         <td>${unit.code}</td>
-                                        <td>${unit.unit_type}</td>
-                                        <td>${unit.area}</td>
+                                        <td>${unit.name || '—'}</td>
+                                        <td>${unit.tower || '—'}</td>
+                                        <td>${unit.floor || '—'}</td>
                                         <td>${egp(unit.price)}</td>
                                         <td>${soldUnitIds.has(unit.id) ? 'مباعة' : 'متاحة'}</td>
                                         <td class="actions">
@@ -796,20 +798,34 @@
 
                 const bodyHtml = `
                     <form id="unit-form">
-                        <div class="form-group">
-                            <label for="unit-code">كود الوحدة</label>
-                            <input type="text" id="unit-code" class="input" value="${isEdit ? unit.code : ''}" placeholder="مثال: U101">
-                        </div>
-                        <div class="form-group">
-                            <label for="unit-type">نوع الوحدة</label>
-                            <select id="unit-type" class="input">
-                                <option value="سكني" ${isEdit && unit.unit_type === 'سكني' ? 'selected' : ''}>سكني</option>
-                                <option value="تجاري" ${isEdit && unit.unit_type === 'تجاري' ? 'selected' : ''}>تجاري</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="unit-area">المساحة (م²)</label>
-                            <input type="number" id="unit-area" class="input" value="${isEdit ? unit.area : ''}">
+                         <div class="grid grid-cols-2 gap-1">
+                            <div class="form-group">
+                                <label for="unit-code">كود الوحدة</label>
+                                <input type="text" id="unit-code" class="input" value="${isEdit ? unit.code : ''}" placeholder="مثال: U101" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="unit-name">اسم الوحدة</label>
+                                <input type="text" id="unit-name" class="input" value="${isEdit && unit.name ? unit.name : ''}" placeholder="مثال: شقة 101">
+                            </div>
+                            <div class="form-group">
+                                <label for="unit-tower">البرج</label>
+                                <input type="text" id="unit-tower" class="input" value="${isEdit && unit.tower ? unit.tower : ''}" placeholder="مثال: برج أ">
+                            </div>
+                            <div class="form-group">
+                                <label for="unit-floor">الطابق</label>
+                                <input type="text" id="unit-floor" class="input" value="${isEdit && unit.floor ? unit.floor : ''}">
+                            </div>
+                             <div class="form-group">
+                                <label for="unit-type">نوع الوحدة</label>
+                                <select id="unit-type" class="input">
+                                    <option value="سكني" ${isEdit && unit.unit_type === 'سكني' ? 'selected' : ''}>سكني</option>
+                                    <option value="تجاري" ${isEdit && unit.unit_type === 'تجاري' ? 'selected' : ''}>تجاري</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="unit-area">المساحة (م²)</label>
+                                <input type="number" id="unit-area" class="input" value="${isEdit ? unit.area : ''}">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="unit-price">السعر</label>
@@ -847,6 +863,9 @@
                 const unitData = {
                     id: isEdit ? unitId : uid('unit'),
                     code: unitCode,
+                    name: document.getElementById('unit-name').value.trim(),
+                    tower: document.getElementById('unit-tower').value.trim(),
+                    floor: document.getElementById('unit-floor').value.trim(),
                     unit_type: document.getElementById('unit-type').value,
                     area: parseNumber(document.getElementById('unit-area').value),
                     price: parseNumber(document.getElementById('unit-price').value),
@@ -1102,8 +1121,8 @@
                                 <tr>
                                     <th>الاسم</th>
                                     <th>الهاتف</th>
-                                    <th>الرقم القومي</th>
-                                    <th>ملاحظات</th>
+                                    <th>العنوان</th>
+                                    <th>الحالة</th>
                                     <th>إجراءات</th>
                                 </tr>
                             </thead>
@@ -1112,8 +1131,8 @@
                                     <tr>
                                         <td>${c.name}</td>
                                         <td>${c.phone || '—'}</td>
-                                        <td>${c.national_id || '—'}</td>
-                                        <td>${c.notes || '—'}</td>
+                                        <td>${c.address || '—'}</td>
+                                        <td><span style="color: ${c.status === 'نشط' ? 'var(--success-color)' : 'var(--danger-color)'}; font-weight: bold;">${c.status || 'نشط'}</span></td>
                                         <td class="actions">
                                             <button class="btn btn-sm" onclick="showCustomerForm('${c.id}')">تعديل</button>
                                             <button class="btn warn btn-sm" onclick="handleDeleteCustomer('${c.id}')">حذف</button>
@@ -1134,17 +1153,30 @@
 
                 const bodyHtml = `
                     <form id="customer-form">
-                        <div class="form-group">
-                            <label for="customer-name">الاسم</label>
-                            <input type="text" id="customer-name" class="input" value="${isEdit ? customer.name : ''}" required>
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="form-group">
+                                <label for="customer-name">الاسم</label>
+                                <input type="text" id="customer-name" class="input" value="${isEdit ? customer.name : ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="customer-phone">الهاتف</label>
+                                <input type="tel" id="customer-phone" class="input" value="${isEdit ? customer.phone || '' : ''}">
+                            </div>
+                            <div class="form-group">
+                                <label for="customer-national-id">الرقم القومي</label>
+                                <input type="text" id="customer-national-id" class="input" value="${isEdit && customer.national_id ? customer.national_id : ''}">
+                            </div>
+                             <div class="form-group">
+                                <label for="customer-status">الحالة</label>
+                                <select id="customer-status" class="input">
+                                    <option value="نشط" ${!isEdit || (isEdit && customer.status === 'نشط') ? 'selected' : ''}>نشط</option>
+                                    <option value="موقوف" ${isEdit && customer.status === 'موقوف' ? 'selected' : ''}>موقوف</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label for="customer-phone">الهاتف</label>
-                            <input type="tel" id="customer-phone" class="input" value="${isEdit ? customer.phone || '' : ''}">
-                        </div>
-                        <div class="form-group">
-                            <label for="customer-national-id">الرقم القومي</label>
-                            <input type="text" id="customer-national-id" class="input" value="${isEdit ? customer.national_id || '' : ''}">
+                            <label for="customer-address">العنوان</label>
+                            <input type="text" id="customer-address" class="input" value="${isEdit && customer.address ? customer.address : ''}">
                         </div>
                         <div class="form-group">
                             <label for="customer-notes">ملاحظات</label>
@@ -1160,16 +1192,29 @@
 
             function handleSaveCustomer(customerId) {
                 const name = document.getElementById('customer-name').value.trim();
-                if (!name) {
-                    alert('اسم العميل مطلوب.');
+                const phone = document.getElementById('customer-phone').value.trim();
+
+                if (!name || !phone) {
+                    alert('الاسم ورقم الهاتف حقول إلزامية.');
+                    return;
+                }
+
+                const isDuplicate = app.state.customers.some(
+                    c => c.id !== customerId && (c.name === name || c.phone === phone)
+                );
+
+                if (isDuplicate) {
+                    alert('يوجد عميل آخر بنفس الاسم أو رقم الهاتف.');
                     return;
                 }
 
                 const customerData = {
                     id: customerId || uid('customer'),
                     name,
-                    phone: document.getElementById('customer-phone').value.trim(),
+                    phone,
                     national_id: document.getElementById('customer-national-id').value.trim(),
+                    address: document.getElementById('customer-address').value.trim(),
+                    status: document.getElementById('customer-status').value,
                     notes: document.getElementById('customer-notes').value.trim()
                 };
 
